@@ -1,0 +1,139 @@
+import socket,time,csv,boto3
+from botocore.client import Config
+
+client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+ip = '127.0.0.1'
+port = 9770
+address = (ip,port)
+i=0
+  
+client.connect(address)
+print("connected")
+    
+def upload():
+    
+    ACCESS_KEY_ID = 'AKIAJXRRMBSQHIKLDBZA'
+    ACCESS_SECRET_KEY = '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'
+    BUCKET_NAME = 'nithya-ohio-odo'
+
+    datau = open('C:\Data\data_%d.csv'% i, 'rb')
+
+    s3 = boto3.resource(
+        's3',
+        aws_access_key_id=ACCESS_KEY_ID,
+        aws_secret_access_key=ACCESS_SECRET_KEY,
+        config=Config(signature_version='s3v4')
+        )
+    s3.Bucket(BUCKET_NAME).put_object(Key='C:\Data\data_%d.csv'% i, Body=datau)
+
+    print ("upload Done")
+ 
+        
+while 1:
+    try:
+        client.send(b'\x01\x04\x00\x00\x00\x4E\x70\x3E')
+        print("sent")
+        raw_data1 = client.recv(1024)
+        received_data = " ".join("{:02x}".format(byte) for byte in (raw_data1))
+        print(received_data)
+        client.send(b'\x01\x04\x00\xC8\x00\x06\xF1\xF6')
+        print("sent")
+        raw_data2 = client.recv(1024)
+        received_data_line2line = " ".join("{:02x}".format(byte) for byte in (raw_data2))
+        print(received_data_line2line)
+        time.sleep(15)
+        with open('C:\Data\data_%d.csv'% i, "w") as csv_file:
+            fieldnames = ['Time','phase1_volt','phase2_volt','phase3_volt',
+                              'phase1_current','phase2_current','phase3_current',
+                              'phase1_power','phase2_power','phase3_power',
+                              'phase1_VA','phase2_VA','phase3_VA',
+                              'phase1_VA_reactive','phase2_VA_reactive','phase3_VA_reactive',
+                              'phase1_pf','phase2_pf','phase3_pf',
+                              'phase1_angle','phase2_angle','phase3_angle',
+                              'Avg_line_neutral_volt','Avg_line_current','sum_line_current',
+                              'Total_sys_power','Total_sys_VA','Total_sys_VAr',
+                              'Total_sys_pf','Total_sys_phase_angle','Freq_supply_volt',
+                              'TImport_Wh','Export_Wh','Import_Var','Export_Var',
+                              'line_12_volt','line_23_volt','line_31_volt']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            phase1_volt = received_data[9:20] 
+            phase2_volt = received_data[20:32]
+            phase3_volt = received_data[32:44]
+            phase1_current = received_data[44:56]
+            phase2_current = received_data[56:68]
+            phase3_current = received_data[68:80]
+            phase1_power = received_data[80:92]
+            phase2_power = received_data[92:104]
+            phase3_power = received_data[104:116]
+            phase1_VA = received_data[116:128]
+            phase2_VA = received_data[128:140]
+            phase3_VA = received_data[140:152]
+            phase1_VA_reactive = received_data[152:164]
+            phase2_VA_reactive = received_data[164:176]
+            phase3_VA_reactive = received_data[176:188]
+            phase1_pf = received_data[188:200]
+            phase2_pf = received_data[200:212]
+            phase3_pf = received_data[212:224]
+            phase1_angle = received_data[224:236]
+            phase2_angle = received_data[236:248]
+            phase3_angle = received_data[248:260]
+            Avg_line_neutral_volt = received_data[260:272]
+            Avg_line_current = received_data[272:284]
+            sum_line_current = received_data[284:296]
+            Total_sys_power = received_data[296:308]
+            Total_sys_VA = received_data[308:320] 
+            Total_sys_VAr = received_data[320:332]
+            Total_sys_pf = received_data[332:344]
+            Total_sys_phase_angle = received_data[344:356]
+            Freq_supply_volt = received_data[356:368]
+            Import_Wh = received_data[368:380]
+            Export_Wh = received_data[380:392]
+            Import_Var = received_data[392:404]
+            Export_Var = received_data[404:416] 
+            line_12_volt = received_data_line2line[9:20]
+            line_23_volt = received_data_line2line[20:32]
+            line_31_volt = received_data_line2line[32:44]
+            writer.writeheader()
+            writer.writerow({'Time':time.ctime(),'phase1_volt':phase1_volt,'phase2_volt': phase2_volt,'phase3_volt': phase3_volt,
+                              'phase1_current': phase1_current,'phase2_current': phase2_current,'phase3_current': phase3_current,
+                                'phase1_power': phase1_power,'phase2_power': phase2_power,'phase3_power': phase3_power,
+                                'phase1_VA': phase1_VA,'phase2_VA': phase2_VA,'phase3_VA': phase3_VA,
+                                'phase1_VA_reactive': phase1_VA_reactive,'phase2_VA_reactive': phase2_VA_reactive,'phase3_VA_reactive': phase3_VA_reactive,
+                                'phase1_pf': phase1_pf,'phase2_pf': phase2_pf,'phase3_pf': phase3_pf,
+                                'phase1_angle': phase1_angle,'phase2_angle': phase2_angle,'phase3_angle': phase3_angle,
+                                'Avg_line_neutral_volt': Avg_line_neutral_volt,'Avg_line_current': Avg_line_current,'sum_line_current': sum_line_current,
+                                'Total_sys_power': Total_sys_power,'Total_sys_VA': Total_sys_VA,'Total_sys_VAr': Total_sys_VAr,
+                                'Total_sys_pf': Total_sys_pf,'Total_sys_phase_angle': Total_sys_phase_angle,'Freq_supply_volt': Freq_supply_volt,
+                                'TImport_Wh': Import_Wh,'Export_Wh': Export_Wh,'Import_Var': Import_Var,'Export_Var': Export_Var,
+                                'line_12_volt':line_12_volt,'line_23_volt':line_23_volt,'line_31_volt':line_31_volt })
+        upload()
+      # print("done")
+        i=i+1
+        
+    except socket.error:
+        while 1:
+            try:
+                print("error")
+                client.close()
+                time.sleep(30)
+                print("reconnecting")
+                client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+                while 1:
+                    client.connect(address)
+                    print("connected back")
+                    break        
+                break         
+            except ConnectionResetError:
+                print("reset Error")
+                time.sleep(10)
+            except ConnectionAbortedError:
+                print("aborted error")
+                time.sleep(5)
+            except TimeoutError:
+                print("timeout error")
+                time.sleep(10)
+            except ConnectionRefusedError:
+                print("connection refused")
+                time.sleep(5)  

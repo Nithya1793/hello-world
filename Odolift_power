@@ -14,8 +14,8 @@ print("connected")
     
 def upload():
     
-    ACCESS_KEY_ID = 'AKIAJXRRMBSQHIKLDBZA'
-    ACCESS_SECRET_KEY = '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'
+    ACCESS_KEY_ID = '******************'
+    ACCESS_SECRET_KEY = '*********'
     BUCKET_NAME = 'nithya-ohio-odo'
 
     datau = open('C:\Data\data_%d.csv'% i, 'rb')
